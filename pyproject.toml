@@ -6,7 +6,11 @@ authors = ["Jorge Maciel <jorge.maciel.jr@gmail.com>"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = "^3.11"
+python = ">=3.11,<3.13.0"
+apache-airflow = "^2.10.2"
+apache-airflow-providers-apache-spark = "^4.11.0"
+pyspark = "^3.5.3"
+apache-airflow-providers-openlineage = "1.10.0"
 
 [build-system]
 requires = ["poetry-core"]
