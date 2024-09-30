@@ -1,9 +1,18 @@
 version: '3'
 
+x-spark-common: &spark-common
+  build:
+    context: .
+    dockerfile: ./docker/spark/Dockerfile
+  volumes:
+    - ./jobs:/opt/bitnami/spark/jobs
+  networks:
+    - lake
+
 x-airflow-common: &airflow-common
   build:
     context: .
-    dockerfile: Dockerfile
+    dockerfile: ./docker/airflow/Dockerfile
   env_file:
     - airflow.env
   volumes:
@@ -13,30 +22,27 @@ x-airflow-common: &airflow-common
   depends_on:
     - postgres
   networks:
-    - sinan-datalake
+    - lake
 
 services:
-  webserver:
-    <<: *airflow-common
-    command: webserver
+  spark-master:
+    <<: *spark-common
+    command: bin/spark-class org.apache.spark.deploy.master.Master
     ports:
-      - "8080:8080"
+      - "9090:8080"
+      - "7077:7077"
+
+  spark-worker:
+    <<: *spark-common
+    command: bin/spark-class org.apache.spark.deploy.worker.Worker spark://spark-master:7077
     depends_on:
-      - scheduler
-
-  scheduler:
-    <<: *airflow-common
-    command: bash -c "airflow db migrate && airflow users create --username admin --firstname Jorge --lastname Maciel --role Admin --email jorge.maciel.jr@gmail.com --password admin && airflow scheduler"
-
-  postgres:
-    image: postgres:14.0
+      - spark-master
     environment:
-      - POSTGRES_USER=airflow
-      - POSTGRES_PASSWORD=airflow
-      - POSTGRES_DB=airflow
-    networks:
-      - sinan-datalake
-  
+      SPARK_MODE: worker
+      SPARK_WORKER_CORES: 4
+      SPARK_WORKER_MEMORY: 2g
+      SPARK_MASTER_URL: spark://spark-master:7077
+
   minio:
     image: minio/minio
     hostname: minio
@@ -49,7 +55,7 @@ services:
       MINIO_ROOT_PASSWORD: minioadmin
     command: server /data --console-address ":9001"
     networks:
-      - sinan-datalake
+      - lake
 
   mc-init:
     image: 'minio/mc'
@@ -67,8 +73,28 @@ services:
     depends_on:
       - minio
     networks:
-      - sinan-datalake
+      - lake
 
+  postgres:
+    image: postgres:14.0
+    environment:
+      - POSTGRES_USER=airflow
+      - POSTGRES_PASSWORD=airflow
+      - POSTGRES_DB=airflow
+    networks:
+      - lake
+
+  webserver:
+    <<: *airflow-common
+    command: webserver
+    ports:
+      - "8080:8080"
+    depends_on:
+      - scheduler
+
+  scheduler:
+    <<: *airflow-common
+    command: bash -c "airflow db migrate && airflow users create --username admin --firstname Yusuf --lastname Ganiyu --role Admin --email airscholar@gmail.com --password admin && airflow scheduler"
 
 networks:
-  sinan-datalake:
+  lake:
