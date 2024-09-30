@@ -2,12 +2,20 @@ FROM apache/airflow:latest-python3.12
 
 USER root
 RUN apt-get update && \
-    apt-get install -y gcc python3-dev openjdk-17-jdk procps wget && \
+    apt-get install -y gcc python3-dev openjdk-17-jdk procps wget make sudo && \
     apt-get clean
 
 # Set JAVA_HOME environment variable
 ENV JAVA_HOME /usr/lib/jvm/java-17-openjdk-amd64
 RUN export JAVA_HOME
+
+ADD ./docker/airflow/pysus /home/airflow/pysus
+
+WORKDIR /home/airflow/pysus
+
+RUN make install
+
+WORKDIR /home/airflow
 
 USER airflow
 
