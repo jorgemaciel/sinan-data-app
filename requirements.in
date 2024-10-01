@@ -1,0 +1,6 @@
+apache-airflow 
+apache-airflow-providers-apache-spark 
+apache-airflow-providers-amazon 
+boto3 
+pyspark 
+minio

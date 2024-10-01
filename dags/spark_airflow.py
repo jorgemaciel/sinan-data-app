@@ -8,7 +8,7 @@ from airflow.providers.apache.spark.operators.spark_submit import (
 dag = DAG(
     dag_id="sparking_flow",
     default_args={
-        "owner": "Yusuf Ganiyu",
+        "owner": "Jorge Maciel",
         "start_date": airflow.utils.dates.days_ago(1)
     },
     schedule_interval="@daily"
