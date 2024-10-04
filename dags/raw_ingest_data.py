@@ -4,6 +4,7 @@ import os
 import minio
 from airflow import DAG
 from airflow.operators.python import PythonOperator
+from pysus.ftp.databases.sinan import SINAN
 
 
 dag = DAG(
@@ -28,7 +29,10 @@ client = minio.Minio(
 
 
 def _download_sinan_data():
-    pass
+    sinan = SINAN().load()
+    files = sinan.get_files(dis_code='ANIM')
+    dir = os.getcwd()
+    sinan.download(files, local_dir=dir)
 
 
 start = PythonOperator(
@@ -39,7 +43,7 @@ start = PythonOperator(
 
 
 download_files_task = PythonOperator(
-    task_id='Download_dbc_files',
+    task_id='Download_sinan_files',
     python_callable=_download_sinan_data,
     dag=dag
 )
