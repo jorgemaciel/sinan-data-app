@@ -1,5 +1,6 @@
 from datetime import datetime
 import os
+import shutil
 
 from airflow import DAG
 from airflow.operators.python import PythonOperator
@@ -66,6 +67,14 @@ def _copy_parquet_to_raw(src_directories=find_anim_directories(), minio_bucket=o
                         print(f"Error occurred: {e}")
 
 
+def delete_directory(path='/home/airflow/pysus'):
+    if os.path.exists(path) and os.path.isdir(path):
+        shutil.rmtree(path)
+        print(f"Directory {path} has been deleted.")
+    else:
+        print(f"Directory {path} does not exist.")
+
+
 start = PythonOperator(
     task_id="start",
     python_callable=lambda: print("Jobs started"),
@@ -83,6 +92,13 @@ download_files_task = PythonOperator(
 copy_parquet_to_raw_task = PythonOperator(
     task_id='Copy_parquet_to_raw',
     python_callable=_copy_parquet_to_raw,
+    dag=dag
+)
+
+
+delete_directory_task = PythonOperator(
+    task_id='Delete_directory_pysus',
+    python_callable=delete_directory,
     dag=dag
 )
 
