@@ -94,7 +94,7 @@ services:
 
   scheduler:
     <<: *airflow-common
-    command: bash -c "airflow db migrate && airflow users create --username admin --firstname Yusuf --lastname Ganiyu --role Admin --email airscholar@gmail.com --password admin && airflow scheduler"
+    command: bash -c "airflow db migrate && airflow users create --username admin --firstname Jorge --lastname Maciel --role Admin --email jorge.maciel.jr@gmail.com --password admin && airflow scheduler"
 
 networks:
   lake:
